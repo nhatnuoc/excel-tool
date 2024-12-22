@@ -59,9 +59,11 @@ def split_excel_by_column(file_path, column_name):
 # Tạo giao diện bằng Tkinter
 def create_gui():
     """Tạo giao diện chính."""
+    file_path = None  # Khởi tạo biến file_path trong phạm vi hàm create_gui
+
     def on_select_file():
         """Xử lý chọn file và hiển thị danh sách cột."""
-        nonlocal file_path
+        nonlocal file_path  # Biến nonlocal tham chiếu file_path trong hàm cha
         file_path, columns = load_excel_columns()
         if columns:
             column_var.set("")
@@ -108,5 +110,4 @@ def create_gui():
     root.mainloop()
 
 if __name__ == "__main__":
-    file_path = None
     create_gui()
