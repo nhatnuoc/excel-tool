@@ -1,0 +1,58 @@
+name: Build Applications
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        pip install pyinstaller pandas openpyxl
+
+    - name: Build executable
+      run: |
+        pyinstaller --onefile --windowed excel_splitter.py
+
+    - name: Upload Windows artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: Windows-App
+        path: dist/excel_splitter.exe
+
+  build-mac:
+    runs-on: macos-latest
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        pip install pyinstaller pandas openpyxl
+
+    - name: Build macOS app
+      run: |
+        pyinstaller --onefile --windowed excel_splitter.py
+
+    - name: Upload macOS artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: MacOS-App
+        path: dist/excel_splitter
