@@ -1,8 +1,14 @@
 import pandas as pd
-from tkinter import Tk, filedialog, messagebox, Button, Label
+from tkinter import Tk, filedialog, messagebox, Button, Label, Entry
 import os
+import re
 
-def split_excel_by_column():
+def sanitize_filename(filename):
+    """Xóa ký tự không hợp lệ khỏi tên file."""
+    return re.sub(r'[\\/:"*?<>|]+', "_", str(filename))
+
+def split_excel_by_column(column_name):
+    """Hàm chia file Excel theo tên cột."""
     # Chọn tệp Excel
     file_path = filedialog.askopenfilename(
         title="Chọn file Excel",
@@ -14,7 +20,6 @@ def split_excel_by_column():
     
     # Chọn thư mục lưu
     output_folder = filedialog.askdirectory(title="Chọn thư mục để lưu các file")
-    
     if not output_folder:
         return
     
@@ -22,8 +27,7 @@ def split_excel_by_column():
         # Đọc file Excel
         data = pd.read_excel(file_path)
         
-        # Xác định cột để chia
-        column_name = "ĐV phát hành"
+        # Kiểm tra cột tồn tại
         if column_name not in data.columns:
             messagebox.showerror("Lỗi", f"Cột '{column_name}' không tồn tại trong file Excel.")
             return
@@ -34,7 +38,8 @@ def split_excel_by_column():
         # Chia file và lưu từng file
         for value in unique_values:
             filtered_data = data[data[column_name] == value]
-            file_name = f"Danh sách thẻ hết hạn - {value}.xlsx"
+            sanitized_value = sanitize_filename(value)
+            file_name = f"Danh sách thẻ hết hạn - {sanitized_value}.xlsx"
             save_path = os.path.join(output_folder, file_name)
             filtered_data.to_excel(save_path, index=False)
         
@@ -45,13 +50,25 @@ def split_excel_by_column():
 
 # Tạo giao diện bằng Tkinter
 def create_gui():
+    """Tạo giao diện chính."""
+    def on_split_click():
+        column_name = column_entry.get().strip()
+        if not column_name:
+            messagebox.showerror("Lỗi", "Vui lòng nhập tên cột để chia tách!")
+            return
+        split_excel_by_column(column_name)
+    
     root = Tk()
     root.title("Công cụ chia tách file Excel")
-    root.geometry("400x200")
+    root.geometry("400x250")
 
-    Label(root, text="Chia tách file Excel theo cột 'ĐV phát hành'", font=("Arial", 12)).pack(pady=20)
+    Label(root, text="Công cụ chia tách file Excel", font=("Arial", 14)).pack(pady=10)
     
-    Button(root, text="Chọn và Chia File Excel", command=split_excel_by_column, font=("Arial", 10)).pack(pady=10)
+    Label(root, text="Nhập tên cột để chia tách:", font=("Arial", 10)).pack(pady=5)
+    column_entry = Entry(root, width=30, font=("Arial", 10))
+    column_entry.pack(pady=5)
+
+    Button(root, text="Chọn và Chia File Excel", command=on_split_click, font=("Arial", 10)).pack(pady=10)
     Button(root, text="Thoát", command=root.quit, font=("Arial", 10)).pack(pady=10)
 
     root.mainloop()
